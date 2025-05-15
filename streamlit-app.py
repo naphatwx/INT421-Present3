@@ -377,73 +377,72 @@ if models_loaded:
                     
                     if len(cat_features) == 0:
                         st.warning("No categorical features found in the dataset.")
-                        return
-                        
-                    feature_for_viz = st.selectbox('Select Feature:', cat_features)
-                    
-                    # Ensure the Revenue column is boolean
-                    df['Revenue'] = df['Revenue'].astype(bool)
-                    
-                    # Create count plot
-                    fig, ax = plt.subplots(figsize=(12, 6))
-                    
-                    # If the feature has many unique values, limit to top N for clarity
-                    unique_values = df[feature_for_viz].nunique()
-                    if unique_values > 10 and feature_for_viz not in ['Month', 'VisitorType', 'Weekend']:
-                        st.warning(f"Feature {feature_for_viz} has {unique_values} unique values. Showing top 10 by frequency.")
-                        # Get top 10 most common values
-                        top_values = df[feature_for_viz].value_counts().nlargest(10).index
-                        # Filter dataset to only include these values
-                        plot_df = df[df[feature_for_viz].isin(top_values)]
                     else:
-                        plot_df = df
-                    
-                    # Create the countplot
-                    sns.countplot(x=feature_for_viz, hue='Revenue', data=plot_df, palette='viridis')
-                    plt.title(f'Revenue by {feature_for_viz}')
-                    plt.xticks(rotation=45)
-                    plt.tight_layout()
-                    st.pyplot(fig)
-                    
-                    # Calculate conversion rates
-                    conversion_df = df.groupby(feature_for_viz)['Revenue'].mean().reset_index()
-                    conversion_df['Conversion Rate (%)'] = conversion_df['Revenue'] * 100
-                    conversion_df = conversion_df.rename(columns={feature_for_viz: 'Category'})
-                    
-                    # If there are too many categories, limit to top and bottom 5
-                    if len(conversion_df) > 10:
-                        top5 = conversion_df.nlargest(5, 'Conversion Rate (%)')
-                        bottom5 = conversion_df.nsmallest(5, 'Conversion Rate (%)')
-                        conversion_df = pd.concat([top5, bottom5])
-                        st.info("Showing 5 highest and 5 lowest conversion rates.")
-                    
-                    # Plot conversion rates
-                    fig, ax = plt.subplots(figsize=(12, 6))
-                    sns.barplot(x='Category', y='Conversion Rate (%)', data=conversion_df, palette='viridis')
-                    plt.title(f'Conversion Rate by {feature_for_viz}')
-                    plt.xticks(rotation=45)
-                    plt.tight_layout()
-                    st.pyplot(fig)
-                    
-                    # Show count and percentage tables
-                    st.subheader("Data Summary:")
-                    
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        # Count table
-                        st.write("Count by Category:")
-                        count_df = df.groupby([feature_for_viz, 'Revenue']).size().unstack().fillna(0)
-                        count_df.columns = ['No Revenue', 'Revenue']
-                        count_df['Total'] = count_df.sum(axis=1)
-                        st.write(count_df)
+                        feature_for_viz = st.selectbox('Select Feature:', cat_features)
                         
-                    with col2:
-                        # Percentage table
-                        st.write("Conversion Rate by Category:")
-                        percentage_df = conversion_df[['Category', 'Conversion Rate (%)']]
-                        percentage_df = percentage_df.sort_values('Conversion Rate (%)', ascending=False)
-                        st.write(percentage_df)
+                        # Ensure the Revenue column is boolean
+                        df['Revenue'] = df['Revenue'].astype(bool)
+                        
+                        # Create count plot
+                        fig, ax = plt.subplots(figsize=(12, 6))
+                        
+                        # If the feature has many unique values, limit to top N for clarity
+                        unique_values = df[feature_for_viz].nunique()
+                        if unique_values > 10 and feature_for_viz not in ['Month', 'VisitorType', 'Weekend']:
+                            st.warning(f"Feature {feature_for_viz} has {unique_values} unique values. Showing top 10 by frequency.")
+                            # Get top 10 most common values
+                            top_values = df[feature_for_viz].value_counts().nlargest(10).index
+                            # Filter dataset to only include these values
+                            plot_df = df[df[feature_for_viz].isin(top_values)]
+                        else:
+                            plot_df = df
+                        
+                        # Create the countplot
+                        sns.countplot(x=feature_for_viz, hue='Revenue', data=plot_df, palette='viridis')
+                        plt.title(f'Revenue by {feature_for_viz}')
+                        plt.xticks(rotation=45)
+                        plt.tight_layout()
+                        st.pyplot(fig)
+                        
+                        # Calculate conversion rates
+                        conversion_df = df.groupby(feature_for_viz)['Revenue'].mean().reset_index()
+                        conversion_df['Conversion Rate (%)'] = conversion_df['Revenue'] * 100
+                        conversion_df = conversion_df.rename(columns={feature_for_viz: 'Category'})
+                        
+                        # If there are too many categories, limit to top and bottom 5
+                        if len(conversion_df) > 10:
+                            top5 = conversion_df.nlargest(5, 'Conversion Rate (%)')
+                            bottom5 = conversion_df.nsmallest(5, 'Conversion Rate (%)')
+                            conversion_df = pd.concat([top5, bottom5])
+                            st.info("Showing 5 highest and 5 lowest conversion rates.")
+                        
+                        # Plot conversion rates
+                        fig, ax = plt.subplots(figsize=(12, 6))
+                        sns.barplot(x='Category', y='Conversion Rate (%)', data=conversion_df, palette='viridis')
+                        plt.title(f'Conversion Rate by {feature_for_viz}')
+                        plt.xticks(rotation=45)
+                        plt.tight_layout()
+                        st.pyplot(fig)
+                        
+                        # Show count and percentage tables
+                        st.subheader("Data Summary:")
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            # Count table
+                            st.write("Count by Category:")
+                            count_df = df.groupby([feature_for_viz, 'Revenue']).size().unstack().fillna(0)
+                            count_df.columns = ['No Revenue', 'Revenue']
+                            count_df['Total'] = count_df.sum(axis=1)
+                            st.write(count_df)
+                            
+                        with col2:
+                            # Percentage table
+                            st.write("Conversion Rate by Category:")
+                            percentage_df = conversion_df[['Category', 'Conversion Rate (%)']]
+                            percentage_df = percentage_df.sort_values('Conversion Rate (%)', ascending=False)
+                            st.write(percentage_df)
                     
                 except Exception as e:
                     st.error(f"Error in Revenue by Feature visualization: {e}")
